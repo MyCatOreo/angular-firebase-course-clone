@@ -6,6 +6,13 @@
 export const environment = {
   production: false,
   firebase: {
-
-  }
+    apiKey: "AIzaSyAQVx_9Orv0T07KmnHjOMQZhkmey7EdOms",
+    authDomain: "fir-course-da0ed.firebaseapp.com",
+    databaseURL: "https://fir-course-da0ed.firebaseio.com",
+    projectId: "fir-course-da0ed",
+    storageBucket: "fir-course-da0ed.appspot.com",
+    messagingSenderId: "253488673868",
+    appId: "1:253488673868:web:811ee071c7deb284d470e9",
+    measurementId: "G-9TW9SLM6ZY",
+  },
 };
