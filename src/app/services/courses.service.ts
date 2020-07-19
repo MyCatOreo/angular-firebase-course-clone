@@ -1,7 +1,11 @@
 import { Injectable } from "@angular/core";
 import { AngularFirestore } from "@angular/fire/firestore";
+import { OrderByDirection } from "firebase/storage";
 import { map, first } from "rxjs/operators";
 import { Course } from "../model/course";
+import { convertSnaps } from "../../db-utils";
+import { Observable } from "rxjs";
+import { Lesson } from "../model/lesson";
 
 @Injectable({
   providedIn: "root",
@@ -9,7 +13,7 @@ import { Course } from "../model/course";
 export class CoursesService {
   constructor(private db: AngularFirestore) {}
 
-  loadAllCourses() {
+  loadAllCourses(): Observable<Course[]> {
     return this.db
       .collection("courses", (ref) =>
         ref.where("seqNo", ">", 0).where("seqNo", "<", 100).orderBy("seqNo")
@@ -17,12 +21,42 @@ export class CoursesService {
       .snapshotChanges()
       .pipe(
         map((snaps) => {
-          return snaps.map((snap: any) => {
-            return <Course>{
-              id: snap.payload.doc.id,
-              ...snap.payload.doc.data(),
-            };
-          });
+          return convertSnaps<Course>(snaps);
+        }),
+        first()
+      );
+  }
+
+  findCourseByUrl(url: string): Observable<Course> {
+    return this.db
+      .collection("courses", (ref) => ref.where("url", "==", url))
+      .snapshotChanges()
+      .pipe(
+        map((snaps) => {
+          const courses = convertSnaps<Course>(snaps);
+          return courses.length === 1 ? courses[0] : undefined;
+        }),
+        first()
+      );
+  }
+
+  findLessons(
+    courseId: string,
+    sortOrder: OrderByDirection = "asc",
+    pageNumber: number = 0,
+    pageSize: number = 3
+  ): Observable<Lesson[]> {
+    return this.db
+      .collection(`courses/${courseId}/lessons`, (ref) =>
+        ref
+          .orderBy("seqNo", sortOrder)
+          .limit(pageSize)
+          .startAfter(pageSize * pageNumber)
+      )
+      .snapshotChanges()
+      .pipe(
+        map((snaps) => {
+          return convertSnaps<Lesson>(snaps);
         }),
         first()
       );
